@@ -18,7 +18,6 @@ jobs:
   SonarQube:
     needs: maven-build
     uses: cloudbees-io/sonarqube-bundled-sast-scan-code@v1
-    kind: scan
   JFrog:
     needs: SonarQube
     steps:
