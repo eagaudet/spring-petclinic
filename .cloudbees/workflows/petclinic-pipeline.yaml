@@ -6,7 +6,7 @@ on:
     branches:
       - main
 jobs:
-  build:
+  maven-build:
     steps:
       - name: Checkout
         uses: cloudbees-io/checkout@v1
@@ -15,6 +15,20 @@ jobs:
         shell: sh
         run: |
           mvn clean verify -Dtest="*,!MySql*,!Postgres*"
-      - name: SonarQube
-        uses: cloudbees-io/sonarqube-bundled-sast-scan-code@v1
-        kind: scan
+  SonarQube:
+    needs: maven-build
+    uses: cloudbees-io/sonarqube-bundled-sast-scan-code@v1
+    kind: scan
+  JFrog:
+    needs: SonarQube
+    steps:
+      - name: Jfrog configure
+        uses: cloudbees-io/configure-oci-credentials@v1
+        with:
+          registry: testcbplatform
+          username: ${{ vars.jfrogTestCBusername }}
+          password: ${{ secrets.jfrogTestCBpassword }}
+      - name: Push image to the configured OCI Registry
+        uses: cloudbees-io/kaniko@v1
+        with:
+          destination: maven-pet-clinic-libs-snapshot
