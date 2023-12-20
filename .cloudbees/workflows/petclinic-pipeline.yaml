@@ -8,16 +8,18 @@ on:
 jobs:
   maven-build:
     steps:
-      - name: Checkout
-        uses: cloudbees-io/checkout@v1
-      - name: Maven build
-        uses: docker://maven:3-eclipse-temurin-17
+      - uses: cloudbees-io/checkout@v1
+        name: Checkout
+      - uses: docker://maven:3-eclipse-temurin-17
+        name: Maven build
+        kind: build
         shell: sh
         run: |
           mvn clean verify -Dtest="*,!MySql*,!Postgres*"
   SonarQube:
     needs: maven-build
-    uses: cloudbees-io/sonarqube-bundled-sast-scan-code@v1
+    steps:
+      - uses: cloudbees-io/sonarqube-bundled-sast-scan-code@v1
   JFrog:
     needs: SonarQube
     steps:
